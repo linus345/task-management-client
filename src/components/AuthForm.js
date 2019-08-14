@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import axios from 'axios';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
@@ -16,8 +17,6 @@ import LoginFields from './LoginFields';
 import SignupFields from './SignupFields';
 
 import { UserContext } from '../context/UserContext';
-
-import axios from 'axios';
 
 const SignupSchema = Yup.object().shape({
   email: Yup.string()
@@ -49,51 +48,6 @@ const LoginSchema = Yup.object().shape({
     .required('Password is required'),
 });
 
-const handleSignup = async values => {
-  try {
-    const url = process.env.REACT_APP_API_URL + '/signup';
-    const { username, email, password } = values;
-    const res = await axios.post(url, {
-      username,
-      email,
-      password,
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    console.log(res);
-    return res;
-  } catch(error) {
-    if(error) {
-      console.log(error);
-      return error;
-    }
-  }
-}
-
-const handleLogin = async (values, actions, setUser) => {
-  try {
-    const url = process.env.REACT_APP_API_URL + '/login';
-    const { email, password } = values;
-    const res = await axios.post(url, {
-      email,
-      password,
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    console.log(res.data);
-    localStorage.setItem('auth_token', res.data.token);
-    setUser(res.data.user);
-    return;
-  } catch(error) {
-    console.log(error);
-    return error;
-  }
-}
-
 const useStyles = makeStyles(theme => ({
   card: {
     minWidth: '400px',
@@ -121,6 +75,51 @@ const AuthForm = props => {
     setIsLogin(props.isLogin);
   }, [props.isLogin]);
 
+  const handleSignup = async values => {
+    try {
+      const url = process.env.REACT_APP_API_URL + '/signup';
+      const { username, email, password } = values;
+      const res = await axios.post(url, {
+        username,
+        email,
+        password,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(res);
+      return res;
+    } catch(error) {
+      if(error) {
+        console.log(error);
+        return error;
+      }
+    }
+  }
+  
+  const handleLogin = async values => {
+    try {
+      const url = process.env.REACT_APP_API_URL + '/login';
+      const { email, password } = values;
+      const res = await axios.post(url, {
+        email,
+        password,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(res.data);
+      localStorage.setItem('auth_token', res.data.token);
+      setUser(res.data.user);
+      return;
+    } catch(error) {
+      console.log(error);
+      return error;
+    }
+  }
+
   return(
     <Card className={classes.card}>
       <CardContent>
@@ -137,7 +136,7 @@ const AuthForm = props => {
             confirmPassword: '',
           }}
           enableReinitialize={true}
-          onSubmit={isLogin ? (values, actions) => handleLogin(values, actions, setUser) : handleSignup}
+          onSubmit={isLogin ? handleLogin : handleSignup}
           render={props => (
             <form 
               onSubmit={props.handleSubmit}
