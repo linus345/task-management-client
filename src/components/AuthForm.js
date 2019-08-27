@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, withRouter } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -16,7 +16,11 @@ import * as Yup from 'yup';
 import LoginFields from './LoginFields';
 import SignupFields from './SignupFields';
 
+import { ERROR_ALERT } from '../reducers/alerts';
+import { SUCCESS_ALERT } from '../reducers/alerts';
+
 import { UserContext } from '../context/UserContext';
+import { AlertContext } from '../context/AlertContext';
 
 const SignupSchema = Yup.object().shape({
   email: Yup.string()
@@ -70,6 +74,7 @@ const AuthForm = props => {
   const classes = useStyles();
   const [isLogin, setIsLogin] = useState(props.isLogin);
   const { setUser } = useContext(UserContext);
+  const { dispatch } = useContext(AlertContext);
 
   useEffect(() => {
     setIsLogin(props.isLogin);
@@ -88,12 +93,18 @@ const AuthForm = props => {
           'Content-Type': 'application/json',
         },
       });
-      console.log(res);
-      return res;
+      console.log(res.data);
+      props.history.push(res.data.redirect);
+      dispatch({ type: SUCCESS_ALERT, message: res.data.message });
     } catch(error) {
-      if(error) {
-        console.log(error);
-        return error;
+      if(error.response) {
+        console.log(error.response);
+        if(error.response && error.response.data && error.response.data.error && error.response.data.error.errors) {
+          // mongoose error
+          const errors = error.response.data.error.errors;
+          const errorMessage = errors[Object.keys(errors)[0]].message;
+          dispatch({ type: ERROR_ALERT, message: errorMessage });
+        }
       }
     }
   }
@@ -113,10 +124,13 @@ const AuthForm = props => {
       console.log(res.data);
       localStorage.setItem('auth_token', res.data.token);
       setUser(res.data.user);
-      return;
+      props.history.push(res.data.redirect);
+      dispatch({ type: SUCCESS_ALERT, message: res.data.message });
     } catch(error) {
-      console.log(error);
-      return error;
+      if(error.response && error.response.data) {
+        console.log(error.response);
+        dispatch({ type: ERROR_ALERT, message: error.response.data.message });
+      }
     }
   }
 
@@ -177,4 +191,4 @@ const AuthForm = props => {
   )
 }
 
-export default AuthForm;
+export default withRouter(AuthForm);

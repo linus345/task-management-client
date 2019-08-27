@@ -1,7 +1,5 @@
 import React, { Fragment } from 'react';
-import {
-  TextField,
-} from '@material-ui/core';
+import { TextField } from '@material-ui/core';
 
 import { makeStyles } from '@material-ui/core/styles';
 

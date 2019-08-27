@@ -15,8 +15,6 @@ import {
 } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { red } from '@material-ui/core/colors';
-
 const drawerWidth = 200;
 
 const useStyles = makeStyles(theme => ({
@@ -28,13 +26,13 @@ const useStyles = makeStyles(theme => ({
     width: drawerWidth,
   },
   list: {
-    padding: '10px',
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
   },
   listItem: {
     borderRadius: '4px',
-    selected: {
-      background: red,
-    }
   },
   toolbar: theme.mixins.toolbar,
 }));
@@ -52,9 +50,21 @@ const Drawer = () => {
     >
       <div className={classes.toolbar} />
       <List className={classes.list}>
-        {['Home', 'Groups', 'Friends', 'Boards'].map((text, index) => (
+        {[{
+          text: 'Home',
+          path: '/',
+        }, {
+          text: 'Groups',
+          path: '/groups',
+        }, {
+          text: 'Friends',
+          path: '/friends',
+        }, {
+          text: 'Boards',
+          path: '/boards',
+        }].map(({ text, path }, index) => (
           <Link
-            to="/"
+            to={path}
             component={RouterLink}
             color="inherit"
             underline="none"
