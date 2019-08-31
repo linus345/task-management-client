@@ -65,15 +65,18 @@ const Board = ({ match }) => {
     if(!destination) return; // dropped outside of list
     if(destination.droppableId === source.droppableId && destination.index === source.index) return; // didn't move
 
-    // task was moved to different index/column so we have to reorder task array
     console.log('tasks', tasks);
     console.log('destinatiton', destination);
     console.log('source', source);
     console.log('draggableId', draggableId);
-    // const newTaskList = Array.from(tasks);
-    // console.log('task list', newTaskList);
-    // newTaskList.splice(source.index, 1);
-    // newTaskList(destination.index, 0, )
+
+    const task = tasks.filter(task => task._id === draggableId);
+    // task was moved to different index/column so we have to reorder task array
+    const newTaskList = Array.from(tasks);
+    newTaskList.splice(source.index, 1);
+    newTaskList.splice(destination.index, 0, task[0]);
+    console.log('newtasklist', newTaskList);
+    setTasks(newTaskList);
   }
 
   if(!board) return 'No board found';
