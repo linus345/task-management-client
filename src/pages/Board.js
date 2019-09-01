@@ -27,8 +27,8 @@ const Board = ({ match }) => {
   const classes = useStyles();
   const { setUser } = useContext(UserContext);
   const [board, setBoard] = useState(null);
-  const [columns, setColumns] = useState(null);
-  const [tasks, setTasks] = useState([]);
+  const [columns, setColumns] = useState([]);
+  const [tasks, setTasks] = useState(null);
 
   useEffect(() => {
     const fetchBoard = async () => {
@@ -40,14 +40,20 @@ const Board = ({ match }) => {
           },
         });
         console.log(res);
+        const tasksTemp = {};
+        res.data.board.columns.forEach(column => {
+          const { _id, tasks: columnTasks } = column;
+          tasksTemp[_id] = columnTasks;
+        });
+        console.log('tasksTemp', tasksTemp);
         setBoard(res.data.board);
+        setTasks(tasksTemp);
         setColumns(res.data.board.columns);
-        setTasks(res.data.board.tasks);
       } catch(error) {
         console.log(error.response);
         setBoard(null);
-        setColumns(null);
-        setTasks([]);
+        setColumns([]);
+        setTasks(null);
       }
     }
 
@@ -61,22 +67,45 @@ const Board = ({ match }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if(!tasks) return;
+    // send new task order to database
+    console.log('tasks from useeffect', tasks);
+  }, [tasks])
+
   const handleDragEnd = ({ destination, source, draggableId }) => {
     if(!destination) return; // dropped outside of list
     if(destination.droppableId === source.droppableId && destination.index === source.index) return; // didn't move
+    
+    if(source.droppableId === destination.droppableId) {
+      // moved within the same column
+      const newTaskList = Array.from(tasks[source.droppableId]);
+      const task = newTaskList.filter(task => task._id === draggableId)[0];
+      newTaskList.splice(source.index, 1);
+      newTaskList.splice(destination.index, 0, task);
+      console.log('newtasklist', newTaskList);
+      setTasks(prevTaskList => {
+        console.log('prevtasklist', prevTaskList);
+        console.log('droppable', source.droppableId);
+        return { ...prevTaskList, [source.droppableId]: newTaskList}
+      });
+    } else {
+      // moved between different columns
+      const startTaskList = tasks[source.droppableId];
+      const endTaskList = tasks[destination.droppableId];
 
-    console.log('tasks', tasks);
-    console.log('destinatiton', destination);
-    console.log('source', source);
-    console.log('draggableId', draggableId);
+      const newStartTaskList = Array.from(startTaskList);
+      const newEndTaskList = Array.from(endTaskList);
 
-    const task = tasks.filter(task => task._id === draggableId);
-    // task was moved to different index/column so we have to reorder task array
-    const newTaskList = Array.from(tasks);
-    newTaskList.splice(source.index, 1);
-    newTaskList.splice(destination.index, 0, task[0]);
-    console.log('newtasklist', newTaskList);
-    setTasks(newTaskList);
+      const task = newStartTaskList.filter(task => task._id === draggableId)[0];
+
+      newStartTaskList.splice(source.index, 1);
+      newEndTaskList.splice(destination.index, 0, task);
+
+      setTasks(prevTaskList => {
+        return { ...prevTaskList, [source.droppableId]: newStartTaskList, [destination.droppableId]: newEndTaskList };
+      });
+    }
   }
 
   if(!board) return 'No board found';
@@ -90,7 +119,7 @@ const Board = ({ match }) => {
           container
         >
           <DragDropContext onDragEnd={handleDragEnd}>
-            {columns && columns.map(column => <TaskColumn tasks={tasks} name={column.name} columnId={column._id} key={column._id} />)}
+            {columns && columns.map(column => <TaskColumn tasks={tasks[column._id]} name={column.name} columnId={column._id} key={column._id} />)}
           </DragDropContext>
         </Grid>
       </Grid>

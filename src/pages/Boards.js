@@ -159,7 +159,9 @@ const Boards = () => {
                       </Typography>
                       <br />
                       <Typography variant="caption" color="textSecondary">
-                        Tasks: {board.tasks.length}
+                        Tasks: {board.columns.reduce((acc, column) => {
+                          return acc + column.tasks.length;
+                        }, 0)}
                       </Typography>
                     </CardContent>
                   </CardActionArea>

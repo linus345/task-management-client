@@ -27,7 +27,8 @@ const TaskColumn = ({ tasks, name, columnId }) => {
               }
             >
               <Divider />
-              {tasks.filter(task => task.column === columnId).map((task, index) => (
+              {/* .filter(task => task.column === columnId) */}
+              {tasks.map((task, index) => (
                 <Task task={task} index={index} key={task._id} />
               ))}
               {provided.placeholder}
