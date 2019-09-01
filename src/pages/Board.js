@@ -71,6 +71,34 @@ const Board = ({ match }) => {
     if(!tasks) return;
     // send new task order to database
     console.log('tasks from useeffect', tasks);
+
+    const reorderTasks = async () => {
+      try {
+        const url = process.env.REACT_APP_API_URL + '/boards/' + match.params.id;
+        const res = await axios.get(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        console.log(res);
+        const tasksTemp = {};
+        res.data.board.columns.forEach(column => {
+          const { _id, tasks: columnTasks } = column;
+          tasksTemp[_id] = columnTasks;
+        });
+        console.log('tasksTemp', tasksTemp);
+        setBoard(res.data.board);
+        setTasks(tasksTemp);
+        setColumns(res.data.board.columns);
+      } catch(error) {
+        console.log(error.response);
+        setBoard(null);
+        setColumns([]);
+        setTasks(null);
+      }
+    }
+
+    reorderTasks()
   }, [tasks])
 
   const handleDragEnd = ({ destination, source, draggableId }) => {
