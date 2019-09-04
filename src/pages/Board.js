@@ -67,39 +67,69 @@ const Board = ({ match }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if(!tasks) return;
-    // send new task order to database
-    console.log('tasks from useeffect', tasks);
+  // useEffect(() => {
+  //   if(!tasks) return;
+  //   // send new task order to database
+  //   console.log('tasks from useeffect', tasks);
 
-    const reorderTasks = async () => {
-      try {
-        const url = process.env.REACT_APP_API_URL + '/boards/' + match.params.id;
-        const res = await axios.get(url, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        console.log(res);
-        const tasksTemp = {};
-        res.data.board.columns.forEach(column => {
-          const { _id, tasks: columnTasks } = column;
-          tasksTemp[_id] = columnTasks;
-        });
-        console.log('tasksTemp', tasksTemp);
-        setBoard(res.data.board);
-        setTasks(tasksTemp);
-        setColumns(res.data.board.columns);
-      } catch(error) {
+  //   const reorderTasks = async () => {
+  //     try {
+  //       const url = process.env.REACT_APP_API_URL + '/boards/' + match.params.id;
+  //       const res = await axios.get(url, {
+  //         headers: {
+  //           'Authorization': `Bearer ${token}`,
+  //         },
+  //       });
+  //       console.log(res);
+  //       const tasksTemp = {};
+  //       res.data.board.columns.forEach(column => {
+  //         const { _id, tasks: columnTasks } = column;
+  //         tasksTemp[_id] = columnTasks;
+  //       });
+  //       console.log('tasksTemp', tasksTemp);
+  //       setBoard(res.data.board);
+  //       setTasks(tasksTemp);
+  //       setColumns(res.data.board.columns);
+  //     } catch(error) {
+  //       console.log(error.response);
+  //       setBoard(null);
+  //       setColumns([]);
+  //       setTasks(null);
+  //     }
+  //   }
+  //   const token = localStorage.getItem('auth_token');
+  //   if(token) {
+  //     reorderTasks();
+  //   }
+  // }, [tasks])
+
+  const reorderTasks = async (taskId, oldIndex, newIndex, sourceColumnId, destinationColumnId) => {
+    const token = localStorage.getItem('auth_token');
+    
+    try {
+      if(!token) throw new Error('No auth token');
+      const url = process.env.REACT_APP_API_URL + '/boards/' + match.params.id + '/columns/tasks';
+      console.log('url', url);
+      const res = await axios.put(url, {
+        taskId,
+        oldIndex,
+        newIndex,
+        sourceColumnId,
+        destinationColumnId,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }, 
+      });
+      console.log(res);
+    } catch(error) {
+      if(error.response) {
         console.log(error.response);
-        setBoard(null);
-        setColumns([]);
-        setTasks(null);
+      } else {
+        console.error(error);
       }
     }
-
-    reorderTasks()
-  }, [tasks])
+  }
 
   const handleDragEnd = ({ destination, source, draggableId }) => {
     if(!destination) return; // dropped outside of list
@@ -117,6 +147,8 @@ const Board = ({ match }) => {
         console.log('droppable', source.droppableId);
         return { ...prevTaskList, [source.droppableId]: newTaskList}
       });
+      // make put request to server and update task order in database
+      reorderTasks(draggableId, source.index, destination.index, source.droppableId, destination.droppableId);
     } else {
       // moved between different columns
       const startTaskList = tasks[source.droppableId];
@@ -133,6 +165,9 @@ const Board = ({ match }) => {
       setTasks(prevTaskList => {
         return { ...prevTaskList, [source.droppableId]: newStartTaskList, [destination.droppableId]: newEndTaskList };
       });
+
+      // make put request to server and update task order in database
+      reorderTasks(draggableId, source.index, destination.index, source.droppableId, destination.droppableId);
     }
   }
 
