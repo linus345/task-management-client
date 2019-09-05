@@ -67,42 +67,6 @@ const Board = ({ match }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // useEffect(() => {
-  //   if(!tasks) return;
-  //   // send new task order to database
-  //   console.log('tasks from useeffect', tasks);
-
-  //   const reorderTasks = async () => {
-  //     try {
-  //       const url = process.env.REACT_APP_API_URL + '/boards/' + match.params.id;
-  //       const res = await axios.get(url, {
-  //         headers: {
-  //           'Authorization': `Bearer ${token}`,
-  //         },
-  //       });
-  //       console.log(res);
-  //       const tasksTemp = {};
-  //       res.data.board.columns.forEach(column => {
-  //         const { _id, tasks: columnTasks } = column;
-  //         tasksTemp[_id] = columnTasks;
-  //       });
-  //       console.log('tasksTemp', tasksTemp);
-  //       setBoard(res.data.board);
-  //       setTasks(tasksTemp);
-  //       setColumns(res.data.board.columns);
-  //     } catch(error) {
-  //       console.log(error.response);
-  //       setBoard(null);
-  //       setColumns([]);
-  //       setTasks(null);
-  //     }
-  //   }
-  //   const token = localStorage.getItem('auth_token');
-  //   if(token) {
-  //     reorderTasks();
-  //   }
-  // }, [tasks])
-
   const reorderTasks = async (taskId, oldIndex, newIndex, sourceColumnId, destinationColumnId) => {
     const token = localStorage.getItem('auth_token');
     
@@ -182,7 +146,16 @@ const Board = ({ match }) => {
           container
         >
           <DragDropContext onDragEnd={handleDragEnd}>
-            {columns && columns.map(column => <TaskColumn tasks={tasks[column._id]} name={column.name} columnId={column._id} key={column._id} />)}
+            {columns && columns.map(column => (
+              <TaskColumn 
+                tasks={tasks[column._id]} 
+                name={column.name} 
+                columnId={column._id} 
+                boardId={board._id}
+                key={column._id} 
+                setTasks={setTasks}
+              />)
+            )}
           </DragDropContext>
         </Grid>
       </Grid>
