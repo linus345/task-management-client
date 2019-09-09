@@ -17,8 +17,14 @@ import { Droppable } from 'react-beautiful-dnd';
 import Task from './Task';
 
 const useStyles = makeStyles(theme => ({
+  root: {
+    marginLeft: theme.spacing(0.5),
+    marginRight: theme.spacing(1),
+    minWidth: '250px',
+  },
   ul: {
     paddingBottom: 0,
+    marginBottom: theme.spacing(3),
   },
   form: {
     display: 'flex',
@@ -45,9 +51,9 @@ const TaskColumn = ({ tasks, setTasks, name, columnId, boardId }) => {
     e.preventDefault();
     if(!taskTitle) return;
     try {
-      const url = process.env.REACT_APP_API_URL + `/boards/${boardId}/columns/${columnId}/tasks`;
       const token = localStorage.getItem('auth_token');
       if(!token) return;
+      const url = `${process.env.REACT_APP_API_URL}/boards/${boardId}/columns/${columnId}/tasks`;
       const newTaskList = Array.from(tasks);
       const res = await axios.post(url, {
         title: taskTitle,
@@ -70,7 +76,7 @@ const TaskColumn = ({ tasks, setTasks, name, columnId, boardId }) => {
   }
 
   return(
-    <Grid item>
+    <Grid item className={classes.root}>
       <Paper>
         <Droppable droppableId={columnId}>
           {provided => (
@@ -85,7 +91,7 @@ const TaskColumn = ({ tasks, setTasks, name, columnId, boardId }) => {
               }
             >
               <Divider />
-              {tasks.map((task, index) => (
+              {tasks && tasks.map((task, index) => (
                 <Task task={task} index={index} key={task._id} />
               ))}
               {provided.placeholder}

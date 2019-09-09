@@ -3,6 +3,8 @@ import axios from 'axios';
 import {
   Grid,
   Typography,
+  Button,
+  TextField,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -16,10 +18,27 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(2),
   },
   columns: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gridGap: theme.spacing(1),
+    // display: 'grid',
+    // gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    // gridGap: theme.spacing(1),
+    display: 'flex',
+    flexWrap: 'nowrap',
+    width: 'auto',
+    minWidth: '100%',
+    overflow: 'scroll',
+  },
+  form: {
+    display: 'flex',
     width: '100%',
+  },
+  input: {
+    minWidth: '200px',
+    flexGrow: 1,
+    margin: 0,
+  },
+  submitButton: {
+    paddingTop: 7.5,
+    paddingBottom: 7.5,
   },
 }));
 
@@ -29,6 +48,7 @@ const Board = ({ match }) => {
   const [board, setBoard] = useState(null);
   const [columns, setColumns] = useState([]);
   const [tasks, setTasks] = useState(null);
+  const [columnName, setColumnName] = useState('');
 
   useEffect(() => {
     const fetchBoard = async () => {
@@ -66,6 +86,40 @@ const Board = ({ match }) => {
     // to get rid of linter warning
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // create new column
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if(!columnName) return;
+    try {
+      const token = localStorage.getItem('auth_token');
+      if(!token) {
+        setUser(null);
+        return;
+      };
+      const url = process.env.REACT_APP_API_URL + '/boards/' + match.params.id + '/columns';
+      const res = await axios.post(url, {
+        name: columnName,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      console.log(res);
+      setColumns(prev => [...prev, res.data.column]);
+      setTasks(prev => {
+        return { ...prev, [res.data.column._id]: res.data.column.tasks };
+      });
+      console.log('tasks', tasks);
+      setColumnName('');
+    } catch(error) {
+      if(error.response) {
+        console.log(error.response);
+      } else {
+        console.log(error);
+      }
+    }
+  }
 
   const reorderTasks = async (taskId, oldIndex, newIndex, sourceColumnId, destinationColumnId) => {
     const token = localStorage.getItem('auth_token');
@@ -148,7 +202,7 @@ const Board = ({ match }) => {
           <DragDropContext onDragEnd={handleDragEnd}>
             {columns && columns.map(column => (
               <TaskColumn 
-                tasks={tasks[column._id]} 
+                tasks={tasks[column._id]}
                 name={column.name} 
                 columnId={column._id} 
                 boardId={board._id}
@@ -157,6 +211,26 @@ const Board = ({ match }) => {
               />)
             )}
           </DragDropContext>
+          <Grid item>
+            <form onSubmit={handleSubmit} className={classes.form}>
+              <TextField
+                id="standard-dense"
+                placeholder="New column"
+                margin="dense"
+                variant="outlined"
+                className={classes.input}
+                value={columnName}
+                onChange={e => setColumnName(e.target.value)}
+                onBlur={e => setColumnName(e.target.value)}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                className={classes.submitButton}
+              >Add</Button>
+            </form>
+          </Grid>
         </Grid>
       </Grid>
     </Grid>

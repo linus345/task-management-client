@@ -15,6 +15,8 @@ import {
 } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
+import axios from 'axios';
+
 const useStyles = makeStyles(theme => ({
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
@@ -37,6 +39,26 @@ const AppBar = props => {
   
   const handleClose = () => {
     setAnchorEl(null);
+  }
+
+  const handleLogout = async () => {
+    handleClose();
+    try {
+      const token = localStorage.getItem('auth_token');
+      if(!token) return;
+      const url = `${process.env.REACT_APP_API_URL}/logout`;
+      const res = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(res);
+      if(res.data.success) {
+        localStorage.removeItem('auth_token');
+      }
+    } catch(error) {
+      console.log(error.response);
+    }
   }
 
   return(
@@ -79,6 +101,7 @@ const AppBar = props => {
             >
               <MenuItem onClick={handleClose}>Profile</MenuItem>
               <MenuItem onClick={handleClose}>My account</MenuItem>
+              <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
           </div> :
           <>
