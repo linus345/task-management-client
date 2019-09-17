@@ -8,7 +8,11 @@ import {
   Paper,
   Divider,
   Button,
+  IconButton,
 } from '@material-ui/core';
+import {
+  Edit as EditIcon,
+} from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 import axios from 'axios';
 
@@ -40,6 +44,15 @@ const useStyles = makeStyles(theme => ({
   submitButton: {
     paddingTop: 7.5,
     paddingBottom: 7.5,
+  },
+  editButton: {
+    margin: theme.spacing(0.5),
+    padding: theme.spacing(1),
+  },
+  listSubHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 }));
 
@@ -85,8 +98,11 @@ const TaskColumn = ({ tasks, setTasks, name, columnId, boardId }) => {
               {...provided.droppableProps}
               className={classes.ul}
               subheader={
-                <ListSubheader component="div">
+                <ListSubheader className={classes.listSubHeader} component="div">
                   {name}
+                  <IconButton color="primary" className={classes.editButton} aria-label="edit">
+                    <EditIcon />
+                  </IconButton>
                 </ListSubheader>
               }
             >

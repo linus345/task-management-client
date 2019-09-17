@@ -5,7 +5,12 @@ import {
   Typography,
   Button,
   TextField,
+  IconButton,
+  Box,
 } from '@material-ui/core';
+import {
+  Edit as EditIcon,
+} from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { DragDropContext } from 'react-beautiful-dnd';
@@ -17,10 +22,13 @@ const useStyles = makeStyles(theme => ({
   container: {
     marginTop: theme.spacing(2),
   },
+  box: {
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginBottom: theme.spacing(2),
+  },
   columns: {
-    // display: 'grid',
-    // gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-    // gridGap: theme.spacing(1),
     display: 'flex',
     flexWrap: 'nowrap',
     width: 'auto',
@@ -39,6 +47,9 @@ const useStyles = makeStyles(theme => ({
   submitButton: {
     paddingTop: 7.5,
     paddingBottom: 7.5,
+  },
+  editButton: {
+    margin: theme.spacing(1),
   },
 }));
 
@@ -193,7 +204,12 @@ const Board = ({ match }) => {
 
   return(
     <Grid container className={classes.container}>
-      <Typography gutterBottom variant="h5">{board.label}</Typography>
+      <Box className={classes.box}>
+        <Typography variant="h5">{board.label}</Typography>
+        <IconButton color="secondary" className={classes.editButton} aria-label="edit">
+          <EditIcon />
+        </IconButton>
+      </Box>
       <Grid item xs={12}>
         <Grid
           className={classes.columns}
