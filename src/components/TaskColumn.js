@@ -11,7 +11,7 @@ import {
   IconButton,
 } from '@material-ui/core';
 import {
-  Edit as EditIcon,
+  MoreHoriz as MoreHorizIcon,
 } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 import axios from 'axios';
@@ -45,7 +45,7 @@ const useStyles = makeStyles(theme => ({
     paddingTop: 7.5,
     paddingBottom: 7.5,
   },
-  editButton: {
+  moreButton: {
     margin: theme.spacing(0.5),
     padding: theme.spacing(1),
   },
@@ -100,8 +100,8 @@ const TaskColumn = ({ tasks, setTasks, name, columnId, boardId }) => {
               subheader={
                 <ListSubheader className={classes.listSubHeader} component="div">
                   {name}
-                  <IconButton color="primary" className={classes.editButton} aria-label="edit">
-                    <EditIcon />
+                  <IconButton className={classes.moreButton} aria-label="show more">
+                    <MoreHorizIcon />
                   </IconButton>
                 </ListSubheader>
               }

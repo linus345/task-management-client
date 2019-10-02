@@ -9,7 +9,7 @@ import {
   Box,
 } from '@material-ui/core';
 import {
-  Edit as EditIcon,
+  MoreHoriz as MoreHorizIcon,
 } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -48,7 +48,7 @@ const useStyles = makeStyles(theme => ({
     paddingTop: 7.5,
     paddingBottom: 7.5,
   },
-  editButton: {
+  moreButton: {
     margin: theme.spacing(1),
   },
 }));
@@ -206,8 +206,8 @@ const Board = ({ match }) => {
     <Grid container className={classes.container}>
       <Box className={classes.box}>
         <Typography variant="h5">{board.label}</Typography>
-        <IconButton color="secondary" className={classes.editButton} aria-label="edit">
-          <EditIcon />
+        <IconButton className={classes.moreButton} aria-label="show more">
+          <MoreHorizIcon />
         </IconButton>
       </Box>
       <Grid item xs={12}>
