@@ -3,14 +3,14 @@ import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles(theme => ({
   loadingContainer: {
-    position: 'absolute',
+    // position: 'absolute',
     width: '100%',
     height: '100vh',
-    backgroundColor: theme.palette.primary.light,
+    backgroundColor: theme.palette.common.white,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: '100000',
+    zIndex: theme.zIndex.drawer + 1,
   },
   spinner: {
     width: '60px',

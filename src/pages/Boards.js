@@ -45,11 +45,14 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+let isMounted = false;
+
 const Boards = () => {
   const classes = useStyles();
   const { setUser } = useContext(UserContext);
   const [boards, setBoards] = useState([]);
   const [boardLabel, setBoardLabel] = useState('');
+  isMounted = true;
 
   useEffect(() => {
     const fetchBoards = async () => {
@@ -61,10 +64,12 @@ const Boards = () => {
           },
         });
         console.log(res);
-        setBoards(res.data.boards);
+        if(isMounted) {
+          setBoards(res.data.boards);
+        }
       } catch(error) {
         console.log(error.response);
-        if(error.response && error.response.status === 401) {
+        if(isMounted && error.response && error.response.status === 401) {
           setUser(null);
         }
       }
@@ -73,8 +78,13 @@ const Boards = () => {
     if(token) {
       fetchBoards();
     } else {
-      setUser(null);
+      if(isMounted) {
+        setUser(null);
+      }
     }
+
+    // cleanup
+    return () => { isMounted = false };
     // to get rid of linter warning
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

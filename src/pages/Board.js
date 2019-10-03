@@ -7,6 +7,8 @@ import {
   TextField,
   IconButton,
   Box,
+  Menu,
+  MenuItem,
 } from '@material-ui/core';
 import {
   MoreHoriz as MoreHorizIcon,
@@ -17,6 +19,7 @@ import { DragDropContext } from 'react-beautiful-dnd';
 
 import { UserContext } from '../context/UserContext';
 import TaskColumn from '../components/TaskColumn';
+import Loading from '../components/Loading';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -53,6 +56,8 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+let isMounted = false;
+
 const Board = ({ match }) => {
   const classes = useStyles();
   const { setUser } = useContext(UserContext);
@@ -60,6 +65,9 @@ const Board = ({ match }) => {
   const [columns, setColumns] = useState([]);
   const [tasks, setTasks] = useState(null);
   const [columnName, setColumnName] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  isMounted = true;
 
   useEffect(() => {
     const fetchBoard = async () => {
@@ -77,14 +85,20 @@ const Board = ({ match }) => {
           tasksTemp[_id] = columnTasks;
         });
         console.log('tasksTemp', tasksTemp);
-        setBoard(res.data.board);
-        setTasks(tasksTemp);
-        setColumns(res.data.board.columns);
+        if(isMounted) {
+          setBoard(res.data.board);
+          setTasks(tasksTemp);
+          setColumns(res.data.board.columns);
+          setIsLoading(false);
+        }
       } catch(error) {
         console.log(error.response);
-        setBoard(null);
-        setColumns([]);
-        setTasks(null);
+        if(isMounted) {
+          setBoard(null);
+          setColumns([]);
+          setTasks(null);
+          setIsLoading(false);
+        }
       }
     }
 
@@ -92,8 +106,13 @@ const Board = ({ match }) => {
     if(token) {
       fetchBoard();
     } else {
-      setUser(null);
+      if(isMounted) {
+        setUser(null);
+      }
     }
+
+    // cleanup
+    return () => { isMounted = false };
     // to get rid of linter warning
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -200,56 +219,77 @@ const Board = ({ match }) => {
     }
   }
 
-  if(!board) return 'No board found';
+  // if(!board) return 'No board found';
 
   return(
-    <Grid container className={classes.container}>
-      <Box className={classes.box}>
-        <Typography variant="h5">{board.label}</Typography>
-        <IconButton className={classes.moreButton} aria-label="show more">
-          <MoreHorizIcon />
-        </IconButton>
-      </Box>
-      <Grid item xs={12}>
-        <Grid
-          className={classes.columns}
-          container
-        >
-          <DragDropContext onDragEnd={handleDragEnd}>
-            {columns && columns.map(column => (
-              <TaskColumn 
-                tasks={tasks[column._id]}
-                name={column.name} 
-                columnId={column._id} 
-                boardId={board._id}
-                key={column._id} 
-                setTasks={setTasks}
-              />)
-            )}
-          </DragDropContext>
-          <Grid item>
-            <form onSubmit={handleSubmit} className={classes.form}>
-              <TextField
-                id="standard-dense"
-                placeholder="New column"
-                margin="dense"
-                variant="outlined"
-                className={classes.input}
-                value={columnName}
-                onChange={e => setColumnName(e.target.value)}
-                onBlur={e => setColumnName(e.target.value)}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                className={classes.submitButton}
-              >Add</Button>
-            </form>
+    <React.Fragment>
+      {isLoading ? <Loading /> : board ? (<Grid container className={classes.container}>
+          <Box className={classes.box}>
+            <Typography variant="h5">{board.label}</Typography>
+            <IconButton
+              className={classes.moreButton}
+              aria-label="show more"
+              aria-haspopup="true"
+              onClick={e => setAnchorEl(e.currentTarget)}
+            >
+              <MoreHorizIcon />
+            </IconButton>
+            <Menu
+              id="board-menu"
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+            >
+              {['Edit', 'Delete'].map(option => (
+                <MenuItem
+                  key={option}
+                >{option}</MenuItem>
+              ))}
+            </Menu>
+          </Box>
+          <Grid item xs={12}>
+            <Grid
+              className={classes.columns}
+              container
+            >
+              <DragDropContext onDragEnd={handleDragEnd}>
+                {columns && columns.map(column => (
+                  <TaskColumn 
+                    tasks={tasks[column._id]}
+                    name={column.name} 
+                    columnId={column._id} 
+                    boardId={board._id}
+                    key={column._id} 
+                    setTasks={setTasks}
+                  />)
+                )}
+              </DragDropContext>
+              <Grid item>
+                <form onSubmit={handleSubmit} className={classes.form}>
+                  <TextField
+                    id="standard-dense"
+                    placeholder="New column"
+                    margin="dense"
+                    variant="outlined"
+                    className={classes.input}
+                    value={columnName}
+                    onChange={e => setColumnName(e.target.value)}
+                    onBlur={e => setColumnName(e.target.value)}
+                  />
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    className={classes.submitButton}
+                  >Add</Button>
+                </form>
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
-      </Grid>
-    </Grid>
+      ) : 'No board found'}
+    </React.Fragment>
   )
 }
 

@@ -9,6 +9,8 @@ import {
   Divider,
   Button,
   IconButton,
+  Menu,
+  MenuItem,
 } from '@material-ui/core';
 import {
   MoreHoriz as MoreHorizIcon,
@@ -59,6 +61,7 @@ const useStyles = makeStyles(theme => ({
 const TaskColumn = ({ tasks, setTasks, name, columnId, boardId }) => {
   const classes = useStyles();
   const [taskTitle, setTaskTitle] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,9 +103,26 @@ const TaskColumn = ({ tasks, setTasks, name, columnId, boardId }) => {
               subheader={
                 <ListSubheader className={classes.listSubHeader} component="div">
                   {name}
-                  <IconButton className={classes.moreButton} aria-label="show more">
+                  <IconButton
+                    className={classes.moreButton}
+                    aria-label="show more"
+                    onClick={e => setAnchorEl(e.currentTarget)}
+                  >
                     <MoreHorizIcon />
                   </IconButton>
+                  <Menu
+                    id="board-menu"
+                    anchorEl={anchorEl}
+                    keepMounted
+                    open={Boolean(anchorEl)}
+                    onClose={() => setAnchorEl(null)}
+                  >
+                    {['Edit', 'Delete'].map(option => (
+                      <MenuItem
+                        key={option}
+                      >{option}</MenuItem>
+                    ))}
+                  </Menu>
                 </ListSubheader>
               }
             >

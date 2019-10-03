@@ -19,7 +19,7 @@ import axios from 'axios';
 
 const useStyles = makeStyles(theme => ({
   appBar: {
-    zIndex: theme.zIndex.drawer + 1,
+    zIndex: theme.zIndex.drawer + 2,
   },
   spacer: {
     flexGrow: 1,

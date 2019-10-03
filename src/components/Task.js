@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ListItem,
   ListItemText,
-  IconButton
+  IconButton,
+  Menu,
+  MenuItem,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import {
@@ -20,6 +22,8 @@ const useStyles = makeStyles(theme => ({
 
 const Task = ({ task, index }) => {
   const classes = useStyles();
+  const [anchorEl, setAnchorEl] = useState(null);
+
   return(
     <Draggable draggableId={task._id} index={index}>
       {provided => (
@@ -30,9 +34,26 @@ const Task = ({ task, index }) => {
           ref={provided.innerRef}
         >
           <ListItemText primary={task.title} />
-          <IconButton className={classes.moreButton} aria-label="show more">
+          <IconButton
+            className={classes.moreButton}
+            aria-label="show more"
+            onClick={e => setAnchorEl(e.currentTarget)}
+          >
             <MoreHorizIcon />
           </IconButton>
+          <Menu
+            id="board-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+          >
+            {['Edit', 'Delete'].map(option => (
+              <MenuItem
+                key={option}
+              >{option}</MenuItem>
+            ))}
+          </Menu>
         </ListItem>
       )}
     </Draggable>

@@ -85,7 +85,6 @@ const App = () => {
     }
   }, []);
 
-  // if(isLoading) return <Loading />;
   return (
     <ThemeProvider theme={theme}>
       <Router>
@@ -97,8 +96,8 @@ const App = () => {
             {/* {isLoading && <Loading />} */}
             <div className={classes.app}>
               <AppBar user={user} />
-              {user ? <Drawer /> : ''}
-              <main className={classes.content}>
+              {isLoading ? '' : user ? <Drawer /> : ''}
+              {isLoading ? <Loading /> : (<main className={classes.content}>
                 <div className={classes.toolbar} />
                 <Switch>
                   <Route exact path="/" component={Index}/>
@@ -108,7 +107,7 @@ const App = () => {
                   <Route exact path="/boards/:id" component={Board} />
                   <Route render={() => <h1>404<br />Not Found</h1>} />
                 </Switch>
-              </main>
+              </main>)}
             </div>
           </AlertContext.Provider>
         </UserContext.Provider>
