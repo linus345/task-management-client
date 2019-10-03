@@ -15,6 +15,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 
 import { UserContext } from '../context/UserContext';
+import Loading from '../components/Loading';
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -52,6 +53,7 @@ const Boards = () => {
   const { setUser } = useContext(UserContext);
   const [boards, setBoards] = useState([]);
   const [boardLabel, setBoardLabel] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   isMounted = true;
 
   useEffect(() => {
@@ -66,11 +68,13 @@ const Boards = () => {
         console.log(res);
         if(isMounted) {
           setBoards(res.data.boards);
+          setIsLoading(false);
         }
       } catch(error) {
         console.log(error.response);
         if(isMounted && error.response && error.response.status === 401) {
           setUser(null);
+          setIsLoading(false);
         }
       }
     }
@@ -79,6 +83,7 @@ const Boards = () => {
       fetchBoards();
     } else {
       if(isMounted) {
+        setIsLoading(false);
         setUser(null);
       }
     }
@@ -115,72 +120,76 @@ const Boards = () => {
 
   return(
     <div>
-      <Paper className={classes.paper}>
-        <form onSubmit={handleSubmit} className={classes.form}>
-          <TextField
-            id="outlined-dense"
-            placeholder="Add board"
-            className={classes.input}
-            margin="dense"
-            variant="outlined"
-            value={boardLabel}
-            onChange={e => setBoardLabel(e.target.value)}
-            onBlur={e => setBoardLabel(e.target.value)}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-          >Add</Button>
-        </form>
-      </Paper>
-      <Grid container className={classes.grid}>
-        {boards.map(board => {
-          const date = new Date(board.createdAt);
-          // format date
-          const year = date.getFullYear();
-          const month = date.getMonth() + 1;
-          const day = date.getDate();
-          const createdAt = `${year}-${month < 9 ? '0' + month : month}-${day < 9 ? '0' + day : day}`;
-          return(
-            <Grid 
-              item
-              key={board._id}
-            >
-              <Link 
-                component={RouterLink}
-                to={`/boards/${board._id}`}
-                underline="none"
-              >
-                <Card className={classes.card}>
-                  <CardActionArea>
-                    <CardContent>
-                      <Typography variant="subtitle2" className={classes.title}>
-                        {board.label}
-                      </Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        {createdAt}
-                      </Typography>
-                      <Typography variant="subtitle2">
-                        &#45;&#45;&#45;
-                      </Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        Members: {board.members.length}
-                      </Typography>
-                      <br />
-                      <Typography variant="caption" color="textSecondary">
-                        Tasks: {board.columns.reduce((acc, column) => {
-                          return acc + column.tasks.length;
-                        }, 0)}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Link>
-            </Grid>
-          )
-        })}
-      </Grid>
+      {isLoading ? <Loading /> : (
+        <React.Fragment>
+          <Paper className={classes.paper}>
+            <form onSubmit={handleSubmit} className={classes.form}>
+              <TextField
+                id="outlined-dense"
+                placeholder="Add board"
+                className={classes.input}
+                margin="dense"
+                variant="outlined"
+                value={boardLabel}
+                onChange={e => setBoardLabel(e.target.value)}
+                onBlur={e => setBoardLabel(e.target.value)}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+              >Add</Button>
+            </form>
+          </Paper>
+          <Grid container className={classes.grid}>
+            {boards.map(board => {
+              const date = new Date(board.createdAt);
+              // format date
+              const year = date.getFullYear();
+              const month = date.getMonth() + 1;
+              const day = date.getDate();
+              const createdAt = `${year}-${month < 9 ? '0' + month : month}-${day < 9 ? '0' + day : day}`;
+              return(
+                <Grid 
+                  item
+                  key={board._id}
+                >
+                  <Link 
+                    component={RouterLink}
+                    to={`/boards/${board._id}`}
+                    underline="none"
+                  >
+                    <Card className={classes.card}>
+                      <CardActionArea>
+                        <CardContent>
+                          <Typography variant="subtitle2" className={classes.title}>
+                            {board.label}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            {createdAt}
+                          </Typography>
+                          <Typography variant="subtitle2">
+                            &#45;&#45;&#45;
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            Members: {board.members.length}
+                          </Typography>
+                          <br />
+                          <Typography variant="caption" color="textSecondary">
+                            Tasks: {board.columns.reduce((acc, column) => {
+                              return acc + column.tasks.length;
+                            }, 0)}
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Link>
+                </Grid>
+              )
+            })}
+          </Grid>
+        </React.Fragment>
+      )}
     </div>
   )
 }
