@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { withRouter } from 'react-router-dom';
 import axios from 'axios';
 import {
   Grid,
@@ -58,7 +59,7 @@ const useStyles = makeStyles(theme => ({
 
 let isMounted = false;
 
-const Board = ({ match }) => {
+const Board = ({ match, history }) => {
   const classes = useStyles();
   const { setUser } = useContext(UserContext);
   const [board, setBoard] = useState(null);
@@ -92,12 +93,16 @@ const Board = ({ match }) => {
           setIsLoading(false);
         }
       } catch(error) {
-        console.log(error.response);
+        console.log('error: ', error.response);
         if(isMounted) {
           setBoard(null);
           setColumns([]);
           setTasks(null);
           setIsLoading(false);
+          if(error.response && error.response.status === 401) {
+            setUser(null);
+            history.push('/login');
+          }
         }
       }
     }
@@ -107,7 +112,9 @@ const Board = ({ match }) => {
       fetchBoard();
     } else {
       if(isMounted) {
+        setIsLoading(false);
         setUser(null);
+        history.push('/login');
       }
     }
 
@@ -143,10 +150,11 @@ const Board = ({ match }) => {
       console.log('tasks', tasks);
       setColumnName('');
     } catch(error) {
-      if(error.response) {
-        console.log(error.response);
-      } else {
-        console.log(error);
+      if(isMounted) {
+        if(error.response && error.response.status === 401) {
+          setUser(null);
+          history.push('/login');
+        }
       }
     }
   }
@@ -171,10 +179,11 @@ const Board = ({ match }) => {
       });
       console.log(res);
     } catch(error) {
-      if(error.response) {
-        console.log(error.response);
-      } else {
-        console.error(error);
+      if (isMounted) {
+        if (error.response && error.response.status === 401) {
+          setUser(null);
+          history.push('/login');
+        }
       }
     }
   }
@@ -293,4 +302,4 @@ const Board = ({ match }) => {
   )
 }
 
-export default Board;
+export default withRouter(Board);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, withRouter } from 'react-router-dom';
 import {
   Button,
   Paper,
@@ -48,7 +48,7 @@ const useStyles = makeStyles(theme => ({
 
 let isMounted = false;
 
-const Boards = () => {
+const Boards = ({ history }) => {
   const classes = useStyles();
   const { setUser } = useContext(UserContext);
   const [boards, setBoards] = useState([]);
@@ -71,10 +71,13 @@ const Boards = () => {
           setIsLoading(false);
         }
       } catch(error) {
-        console.log(error.response);
-        if(isMounted && error.response && error.response.status === 401) {
-          setUser(null);
+        console.log('error: ', error.response);
+        if(isMounted) {
           setIsLoading(false);
+          if (error.response && error.response.status === 401) {
+            setUser(null);
+            history.push('/login');
+          }
         }
       }
     }
@@ -85,6 +88,7 @@ const Boards = () => {
       if(isMounted) {
         setIsLoading(false);
         setUser(null);
+        history.push('/login');
       }
     }
 
@@ -110,12 +114,22 @@ const Boards = () => {
         },
       });
       console.log(res);
-      setBoards([...boards, res.data.board]);
+      if(isMounted) {
+        setBoards([...boards, res.data.board]);
+      }
     } catch(error) {
       console.log(error.response);
+      if (isMounted) {
+        if (error.response && error.response.status === 401) {
+          setUser(null);
+          history.push('/login');
+        }
+      }
     }
     
-    setBoardLabel('');
+    if(isMounted) {
+      setBoardLabel('');
+    }
   }
 
   return(
@@ -194,4 +208,4 @@ const Boards = () => {
   )
 }
 
-export default Boards;
+export default withRouter(Boards);
